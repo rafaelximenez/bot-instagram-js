@@ -3,6 +3,7 @@ const unfollowUser = require("./model/unfollowUser");
 
 const BASE_URL = 'https://instagram.com/';
 const TAG_URL = (tag) => `https://www.instagram.com/explore/tags/${tag}/`;
+const USER_URL = (user) => `https://www.instagram.com/${user}/`;
 
 const instagram = {
     browser: null,
@@ -37,7 +38,7 @@ const instagram = {
 
             let posts = await instagram.page.$$('article > div:nth-child(3) img[decoding="auto"]');
 
-            for(let i =0; i < 3; i++){
+            for(let i =0; i < process.env.NUMBER_LIKES; i++){
                 let post = posts[i];
 
                 await post.click();
@@ -74,8 +75,40 @@ const instagram = {
             await instagram.page.waitFor(5000);
         }
     },
+    unfollowUser: async () => {
+        const usernames = await instagram.findUserInDB();
+        for(let username of usernames){            
+            await instagram.page.goto(USER_URL(username), { waitUntil: 'networkidle2' });
+            await instagram.page.waitFor(1000);      
+            
+            let isFollowed = await instagram.page.$('span[aria-label="Seguindo"]');         
+            if(isFollowed){
+                await isFollowed[1].click('span[aria-label="Seguindo"]');
+                await instagram.page.waitFor(1000); 
+                await instagram.page.$x('//button[contains(text(), "Deixar de seguir")]')[0].click();
+            }   
+            await instagram.page.waitFor(3000);  
+            instagram.deleteUserInDB(username);
+        }
+    },
     saveUserInDB: async (user) => {        
         await unfollowUser.create({name: user});
+    },
+    findUserInDB: async () => {   
+        let usernames = [];     
+        await unfollowUser.find({}, function(err, docs) {
+            if (!err) { 
+                for(let doc in docs){
+                    usernames.push(docs[doc].name);
+                }
+                              
+            }
+        });
+        console.log(usernames);
+        return usernames;
+    },
+    deleteUserInDB: async (user) => {        
+        await unfollowUser.findOneAndDelete({name: user});
     }
 }
 

@@ -1,7 +1,7 @@
 
 const mongoose = require('mongoose');
 
-const CONNECTION_STRING = 'mongodb+srv://root:123@cluster0-ezwez.mongodb.net/unfollow_users?retryWrites=true&w=majority';
+const CONNECTION_STRING = process.env.CONNECTION_STRING;
 
 mongoose.connect(CONNECTION_STRING, { 
     useNewUrlParser: true, 
