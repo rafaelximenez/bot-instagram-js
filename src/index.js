@@ -1,11 +1,13 @@
-const instagram = require('./instagram');
+require("dotenv").config();
+const instagram = require("./instagram");
 
-(async()=>{
-    await instagram.initialize();
+(async () => {
+  await instagram.initialize();
+  await instagram.login(
+    process.env.INSTAGRAM_USERNAME,
+    process.env.INSTAGRAM_PASSWORD
+  );
 
-    await instagram.login(process.env.USERNAME, process.env.PASSWORD);
-
-    await instagram.likeAndFollowTagsProccess(['feliz']);
-
-    await instagram.unfollowUser();
-})()
+  await instagram.followUsersFollowers([]);
+  await instagram.close();
+})();
